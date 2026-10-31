@@ -7,7 +7,13 @@ Nesta parte, você vai usar o **Plan Mode** para projetar uma transformação vi
 
 ## Tarefa 1: Planeje o Tema Retrô
 
-Mude para o modo **Plan** no GitHub Copilot.
+<!-- track:vscode:start -->
+Mude para o modo **Plan** no GitHub Copilot Chat.
+<!-- track:vscode:end -->
+
+<!-- track:cli:start -->
+Use `/plan` no GitHub Copilot CLI ou pressione **Shift+Tab** até ativar o plan mode.
+<!-- track:cli:end -->
 
 Insira este prompt:
 
@@ -19,24 +25,26 @@ O Copilot vai gerar um plano de implementação detalhado cobrindo todos os efei
 - Pergunte sobre efeitos específicos (ex.: "How will the shimmer overlay work on the cards?")
 - Solicite mudanças na abordagem se algo não parecer correto
 
-Quando estiver satisfeito com o plano, deixe o Copilot prosseguir com a implementação.
-
 ## Tarefa 2: Implemente o Tema
 
-Mude para o modo **Agent** e peça ao Copilot para implementar o plano:
+Quando estiver satisfeito com o plano, peça ao Copilot para implementá-lo:
 
 > Implement the retro arcade theme plan we just designed.
 
-O Copilot vai adicionar múltiplas animações CSS, pseudo-elementos e transições na sua folha de estilos. Isso pode incluir:
+O Copilot vai adicionar múltiplas animações CSS, pseudo-elementos e transições na folha de estilos. Isso pode incluir:
 
 - `@keyframes` para scanlines, pulso neon, shimmer e efeitos de float-in
 - Pseudo-elementos (`::before`, `::after`) para efeitos de sobreposição
-- CSS custom properties para as cores do tema
+- Propriedades personalizadas de CSS para as cores do tema
 - Estados de transição e hover para elementos interativos
 
-Depois que as alterações forem aplicadas, **verifique a pré-visualização no seu navegador** para ver a transformação completa do tema retrô arcade.
+<!-- track:cli:start -->
+Depois que as alterações chegarem, use `/diff` para revisar as mudanças de estilo antes de aprová-las.
+<!-- track:cli:end -->
 
 ## Tarefa 3: Ajuste Fino das Vibes
+
+> **⚠️ Não está vendo mudanças?** Se o novo tema ou as animações não aparecerem, pare o servidor (`Ctrl+C`), reinicie com `npm run dev` e faça uma atualização forçada (`Ctrl+Shift+R`) no navegador.
 
 Mantenha a pré-visualização do navegador aberta e itere no design. Tente prompts como:
 
@@ -50,19 +58,23 @@ Isso é **desenvolvimento orientado a design** — você está iterando na saíd
 
 ## Tarefa 4: Atualize as Instruções
 
-Suas instruções de workspace devem refletir decisões importantes de design. Peça ao Copilot:
+Suas instruções de workspace devem refletir decisões importantes de design.
+
+<!-- track:vscode:start -->
+Peça ao Copilot Chat:
 
 > Add a design guide section to copilot-instructions.md describing our retro arcade theme: colors, fonts, animation style
+<!-- track:vscode:end -->
+
+<!-- track:cli:start -->
+Peça ao Copilot CLI:
+
+> Update our repository instructions with a short design guide for the retro arcade theme: colors, fonts, animation style, and the rule that new UI should keep the neon aesthetic.
+<!-- track:cli:end -->
 
 Isso mantém futuras interações com o Copilot consistentes com a identidade visual que você estabeleceu. Qualquer nova funcionalidade ou componente seguirá automaticamente a estética retrô arcade.
 
-**Faça commit e push das suas alterações:**
-
-```
-git add -A
-git commit -m "Add retro arcade theme with CRT and neon effects"
-git push
-```
+Faça commit das instruções e das alterações de design quando a página estiver com a aparência correta.
 
 ## ✅ Parte 4 Concluída
 

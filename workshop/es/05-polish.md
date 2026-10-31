@@ -8,8 +8,9 @@ Ahora que la aplicación funciona y se ve genial, es hora de pulir. Esta parte t
 <!-- track:vscode:start -->
 ## Tarea 1: Agente en Segundo Plano para Diseño Responsivo
 
-1. En el panel de Chat, haz clic en **+** → **New background agent**.
-2. Ingresa este prompt:
+1. En el panel de Chat, haz clic en **+** para abrir un chat nuevo.
+2. En la parte inferior de la ventana, cambia **Local** a **Copilot CLI**.
+3. Ingresa este prompt:
 
    ```
    Add responsive CSS media queries: at 1024px switch comparison to single column,
@@ -18,8 +19,8 @@ Ahora que la aplicación funciona y se ve genial, es hora de pulir. Esta parte t
    Enter triggers battle, and focus states are visible.
    ```
 
-3. Déjalo ejecutarse de forma independiente — no necesitas observarlo.
-4. Cuando termine, **Revisa** los cambios y haz clic en **Apply**.
+4. Déjalo ejecutarse de forma independiente — no necesitas observarlo.
+5. Cuando termine, **Revisa** los cambios y haz clic en **Apply**.
 
 ## Tarea 2: Agente en Segundo Plano para UX de Errores
 
