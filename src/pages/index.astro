@@ -87,9 +87,14 @@
 
 			<section class="arena" id="arena" aria-label="Battle arena" hidden>
 				<article class="player-card" data-player-card>
-					<div class="avatar-placeholder" data-avatar aria-hidden="true">?</div>
+					<a class="profile-link" data-profile-link target="_blank" rel="noreferrer">
+						<img class="avatar-placeholder" data-avatar alt="" />
+					</a>
 					<p class="eyebrow">Player 1</p>
 					<h2 data-username>Username</h2>
+					<p class="profile-name" data-profile-name></p>
+					<p class="profile-bio" data-profile-bio></p>
+					<p class="profile-meta" data-profile-meta></p>
 					<div class="fighter-badge" data-fighter-badge>UNKNOWN CLASS</div>
 					<p class="date-range" data-date-range></p>
 					<div class="contribution-grid" data-grid aria-label="Player 1 contribution grid"></div>
@@ -99,9 +104,14 @@
 				<div class="versus" aria-hidden="true">VS</div>
 
 				<article class="player-card" data-player-card>
-					<div class="avatar-placeholder" data-avatar aria-hidden="true">?</div>
+					<a class="profile-link" data-profile-link target="_blank" rel="noreferrer">
+						<img class="avatar-placeholder" data-avatar alt="" />
+					</a>
 					<p class="eyebrow">Player 2</p>
 					<h2 data-username>Username</h2>
+					<p class="profile-name" data-profile-name></p>
+					<p class="profile-bio" data-profile-bio></p>
+					<p class="profile-meta" data-profile-meta></p>
 					<div class="fighter-badge" data-fighter-badge>UNKNOWN CLASS</div>
 					<p class="date-range" data-date-range></p>
 					<div class="contribution-grid" data-grid aria-label="Player 2 contribution grid"></div>
@@ -177,9 +187,13 @@
 			}), Promise.resolve());
 	};
 
-	const renderPlayer = async (card, data) => {
+	const renderPlayer = async (card, data, profile) => {
 		const avatar = card.querySelector('[data-avatar]');
+		const profileLink = card.querySelector('[data-profile-link]');
 		const username = card.querySelector('[data-username]');
+		const profileName = card.querySelector('[data-profile-name]');
+		const profileBio = card.querySelector('[data-profile-bio]');
+		const profileMeta = card.querySelector('[data-profile-meta]');
 		const fighterBadge = card.querySelector('[data-fighter-badge]');
 		const dateRange = card.querySelector('[data-date-range]');
 		const total = card.querySelector('[data-total]');
@@ -187,9 +201,13 @@
 		const firstDate = days[0]?.date;
 		const lastDate = days[days.length - 1]?.date;
 
-		avatar.textContent = data.username.slice(0, 1).toUpperCase();
-		avatar.setAttribute('aria-label', `${data.username} avatar`);
+		avatar.src = profile.avatarUrl;
+		avatar.alt = `${data.username}'s GitHub avatar`;
+		profileLink.href = profile.htmlUrl;
 		username.textContent = data.username;
+		profileName.textContent = profile.name || '';
+		profileBio.textContent = profile.bio || '';
+		profileMeta.textContent = `${profile.repositories} repos · ${profile.followers} followers · ${profile.following} following`;
 		const fighterClass = classifyFighter(data.days);
 		fighterBadge.textContent = `${fighterClass.icon} ${fighterClass.name}`;
 		fighterBadge.title = fighterClass.description;
@@ -277,6 +295,8 @@
 			['consistency', 'Consistency Score'],
 		];
 		comparisonRows.replaceChildren();
+		const scores = scoreBattle(firstStats, secondStats);
+
 		for (const [key, label] of categories) {
 				const firstValue = firstStats[key === 'peak' ? 'peakCount' : key];
 				const secondValue = secondStats[key === 'peak' ? 'peakCount' : key];
@@ -296,10 +316,23 @@
 				await wait(400);
 				row.hidden = false;
 				row.classList.add('stat-reveal');
-				updatePowerBars(firstScore, secondScore, comparisonRows.children.length);
+				const revealedScores = scores.winners
+					.slice(0, comparisonRows.children.length)
+					.reduce(
+						(totals, winner) => {
+							if (winner === 1) totals.first += 1;
+							if (winner === 2) totals.second += 1;
+							if (winner === 0) {
+								totals.first += 0.5;
+								totals.second += 0.5;
+							}
+							return totals;
+						},
+						{ first: 0, second: 0 },
+					);
+				updatePowerBars(revealedScores.first, revealedScores.second, comparisonRows.children.length);
 		}
 
-		const scores = scoreBattle(firstStats, secondStats);
 		document.querySelector('[data-score="1"]').textContent = `${first.username}: ${scores.firstScore} / 5`;
 		document.querySelector('[data-score="2"]').textContent = `${second.username}: ${scores.secondScore} / 5`;
 		return scores;
@@ -333,6 +366,21 @@
 		return parseContributionData(payload, username);
 	};
 
+	const fetchProfile = async (username) => {
+		const fallback = {
+			avatarUrl: `https://github.com/${encodeURIComponent(username)}.png?size=128`,
+			htmlUrl: `https://github.com/${encodeURIComponent(username)}`,
+			name: '',
+			bio: '',
+			repositories: 0,
+			followers: 0,
+			following: 0,
+		};
+		const response = await fetch(`/api/profile/${encodeURIComponent(username)}`);
+		if (!response.ok) return fallback;
+		return { ...fallback, ...(await response.json()) };
+	};
+
 	form.addEventListener('submit', async (event) => {
 		event.preventDefault();
 		const usernames = [
@@ -364,13 +412,18 @@
 		});
 
 		try {
-			const [playerOne, playerTwo] = await Promise.all([
+			const [players, profiles] = await Promise.all([
 				Promise.all(usernames.map(fetchContributions)),
+				Promise.all(usernames.map(fetchProfile)),
 				runCountdown(),
-			]).then(([players]) => players);
+			]).then(([contributionData, profileData]) => [contributionData, profileData]);
 			const cards = document.querySelectorAll('[data-player-card]');
 			setStatus('REPLAYING CONTRIBUTION DATA...');
-			await Promise.all([renderPlayer(cards[0], playerOne), renderPlayer(cards[1], playerTwo)]);
+			const [playerOne, playerTwo] = players;
+			await Promise.all([
+				renderPlayer(cards[0], playerOne, profiles[0]),
+				renderPlayer(cards[1], playerTwo, profiles[1]),
+			]);
 
 			const firstStats = calculateStats(playerOne.days);
 			const secondStats = calculateStats(playerTwo.days);
@@ -838,6 +891,34 @@
 		font-size: 1.5rem;
 		border: 2px solid currentColor;
 		box-shadow: 0 0 12px currentColor;
+		object-fit: cover;
+	}
+
+	.profile-link {
+		display: inline-block;
+		border-radius: 50%;
+	}
+
+	.profile-name,
+	.profile-bio,
+	.profile-meta {
+		margin: 0.25rem 0;
+		color: #c9cada;
+	}
+
+	.profile-name {
+		font-weight: 700;
+		color: var(--gold);
+	}
+
+	.profile-bio {
+		max-width: 34rem;
+		font-size: 0.85rem;
+	}
+
+	.profile-meta {
+		font-size: 0.75rem;
+		color: #a7a8bc;
 	}
 
 	.contribution-grid {
